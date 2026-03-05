@@ -1,0 +1,141 @@
+import os
+import numpy as np
+import re
+import torch
+import numpy as np
+import pandas as pd
+
+
+all_releases = {'activemq': ['activemq-5.2.0', 'activemq-5.3.0', 'activemq-5.8.0'],
+                'camel': ['camel-2.10.0', 'camel-2.11.0'],
+                'derby': ['derby-10.5.1.1'],
+                'groovy': ['groovy-1_6_BETA_2'],
+                'hbase': ['hbase-0.95.2'],
+                'hive': ['hive-0.12.0'],
+                'jruby': ['jruby-1.5.0', 'jruby-1.7.0.preview1'],
+                'lucene': ['lucene-3.0.0', 'lucene-3.1'],
+                'wicket': ['wicket-1.3.0-beta2', 'wicket-1.5.3']}
+
+
+def is_comment_line(code_line, comments_list):
+    code_line = code_line.strip()
+
+    if len(code_line) == 0:
+        return False
+    elif code_line.startswith('//'):
+        return True
+    elif code_line in comments_list:
+        return True
+
+    return False
+
+
+def is_empty_line(code_line):
+    if len(code_line.strip()) == 0:
+        return True
+
+    return False
+
+
+def preprocess_code_line(code_line):
+    code_line = re.sub("\'\'", "\'", code_line)
+    code_line = code_line.strip()
+
+    return code_line
+
+
+def create_code_df(code_str, filename):
+    df = pd.DataFrame()
+
+    code_lines = code_str.splitlines()
+
+    preprocess_code_lines = []
+    is_comments = []
+    is_blank_line = []
+
+    comments = re.findall(r'(/\*[\s\S]*?\*/)', code_str, re.DOTALL)
+    comments_str = '\n'.join(comments)
+    comments_list = comments_str.split('\n')
+
+    for l in code_lines:
+        l = l.strip()
+        is_comment = is_comment_line(l, comments_list)
+        is_comments.append(is_comment)
+
+        if not is_comment:
+            l = preprocess_code_line(l)
+
+        is_blank_line.append(is_empty_line(l))
+        preprocess_code_lines.append(l)
+
+    if 'test' in filename:
+        is_test = True
+    else:
+        is_test = False
+
+    df['filename'] = [filename] * len(code_lines)
+    df['is_test_file'] = [is_test] * len(code_lines)
+    df['code_line'] = preprocess_code_lines
+    df['line_number'] = np.arange(1, len(code_lines) + 1)
+    df['is_comment'] = is_comments
+    df['is_blank'] = is_blank_line
+
+    return df
+
+
+def code_preprocess(proj_name):
+    proj_all_rel = all_releases[proj_name]
+    # print(proj_all_rel)
+
+    for rel in proj_all_rel:
+
+        file_level_data = pd.read_csv(file_lvl_dir + rel + '_ground-truth-files_dataset.csv', encoding='latin-1')
+        line_level_data = pd.read_csv(line_lvl_dir + rel + '_defective_lines_dataset.csv', encoding='latin-1')
+
+        file_level_data = file_level_data.fillna('')
+
+        buggy_files = list(line_level_data['File'].unique())
+
+        preprocessed_df_list = []
+        for idx, row in file_level_data.iterrows():
+            filename = row['File']
+
+            if '.java' not in filename:
+                continue
+
+            code = row['SRC']
+            label = row['Bug']
+
+            code_df = create_code_df(code, filename)
+            code_df['file-label'] = [label] * len(code_df)
+            code_df['line-label'] = [False] * len(code_df)
+
+            if filename in buggy_files:  # 若该文件在“缺陷行表”中
+                buggy_lines = list(line_level_data[line_level_data['File'] == filename]['Line_number'])
+                code_df['line-label'] = code_df['line_number'].isin(buggy_lines)
+
+            if len(code_df) > 0:
+                preprocessed_df_list.append(code_df)
+
+        all_df = pd.concat(preprocessed_df_list)
+        all_df.to_csv(save_dir + rel + ".csv", index=False)
+        print('finish release {}'.format(rel))
+
+
+if __name__ == '__main__':
+
+    # 保留"{"和"}"
+    original_data_dir = '../datasets/original/'
+    save_dir = "../datasets/llm_preprocessed_data/"
+
+    char_to_remove = ['+', '-', '*', '/', '=', '++', '--', '\\', '<str>', '<char>', '|', '&', '!']
+
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+
+    file_lvl_dir = original_data_dir + 'File-level/'
+    line_lvl_dir = original_data_dir + 'Line-level/'
+
+    for proj in list(all_releases.keys()):
+        code_preprocess(proj)
+
