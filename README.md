@@ -1,4 +1,6 @@
 # LineBTL: A Multi-Granularity and Context-Aware Approach for Line-Level Defect Prediction
+![LineBTL Overview](Fig. 3 LineBTL overview.pdf)
+
 ## Datasets 
 The datasets are obtained from Wattanakriengkrai et. al. The datasets contain 32 software releases across 9 software projects. The datasets that we used in our experiment can be found in this [github](https://github.com/awsm-research/line-level-defect-prediction).
 ## Repository Structure
