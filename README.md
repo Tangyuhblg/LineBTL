@@ -69,4 +69,53 @@ We use the following hyper-parameters to train our DeepLineDP model
 
 - lr (learning rate) = 0.001
 
+## Data Preprocessing
+1. run the command to prepare data for file-level model training. The output will be stored in './datasets/preprocessed_data'
+  
+   ```bash
+   python code_preprocessing.py
+   ```
+2. run the command to divide into basic blocks
+   ```bash
+   python split_basic_block.py
+   ```
+
+## Word2Vec Model Training
+To train Word2Vec models, run the following command:
+   ```bash
+   python train_word2vec.py
+   ```
+
+## LineDef Model Training and Prediction Generation
+To train LineDef models, run the following command:
+```bash
+python train_model.py
+```
+To within project LineDef models, run the following command:
+```bash
+python test_model.py
+```
+To cross project LineDef models, run the following command:
+```bash
+python generate_prediction_cross_projects.py
+```
+
+## LLM 
+
+1. Source code preprocessing
+```bash
+python llm_file_preprocessing.py
+```
+2. Write code to Java files
+```bash
+python ours_code_preprocessing.py
+```
+3. Use LLM to output high-risk line numbers and write the results to the JSON file
+```bash
+python ours_run.py
+```
+4. Analyze the json results of the LLM output
+```bash
+python ours_analysic_json.py
+```
 
