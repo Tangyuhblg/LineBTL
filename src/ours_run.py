@@ -333,7 +333,7 @@ if __name__ == '__main__':
 
     base_url = 'https://api.deepseek.com'
     model = 'deepseek-chat'
-    api_key = 'sk-45ec2c19dd4c4ebd83ab824d01a524b6'
+    api_key = '' # your key
     client = OpenAI(api_key=api_key, base_url=base_url)
 
     workers = 32 # 线程数
@@ -344,3 +344,4 @@ if __name__ == '__main__':
         raise SystemExit("Missing API key. Set DMX_API_KEY (or OPENAI_API_KEY) or pass --api_key.")
 
     process_files_parallel(input_root, output_root, client, workers, max_inflight_requests, max_retries)
+
