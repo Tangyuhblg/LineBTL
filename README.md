@@ -57,11 +57,11 @@ We use the following hyper-parameters to train our DeepLineDP model
   
 - basic_block_att_dim = 64
 
-- basic_block_gcn_hidden_dim
+- basic_block_gcn_hidden_dim = 128
 
 - line_att_dim = 64
 
-- line_hidden_dim = 128
+- line_gcn_hidden_dim = 128
 
 - dropout = 0.2
 
