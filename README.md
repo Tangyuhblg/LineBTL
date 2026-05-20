@@ -21,9 +21,9 @@ Our repository contains the following directory
  
   * train_word2vec.py: The source code used to train word2vec models
  
-  * LineBB_model.py: The source code that stores LineBB architecture
+  * LineBB_model.py: The source code that stores LineBTL architecture
  
-  * train_model.py: The source code used to train LineBB models
+  * train_model.py: The source code used to train LineBTL models
  
   * test.py: The source code used to generate prediction (for RQ1 and RQ2)
  
